@@ -61,7 +61,11 @@ export default function App() {
     catch (e) { setError(e instanceof Error ? e.message : String(e)); }
     finally { setLoading(false); }
   }, []);
-  useEffect(() => { void refresh(); }, [refresh]);
+  useEffect(() => {
+    void refresh();
+    const timer = window.setInterval(() => { void refresh(); }, 30_000);
+    return () => window.clearInterval(timer);
+  }, [refresh]);
 
   const wallet = useCallback(async () => {
     const session = await connect();
@@ -127,7 +131,7 @@ export default function App() {
           <div className="status-kicker">BORROW ADMISSION</div>
           <div className="status-word">{status}</div>
           <p>{configured && !snapshot ? "Waiting for finalized gate state from StudioNet." : gate.closed ? `Borrow requests are blocked until ${date(gate.suspended_until)}.` : "Borrow requests are currently accepted by the demonstration contract."}</p>
-          <div className="status-bottom"><span><span className="tiny-dot" /> {gate.closed ? "TEMPORARY HOLD" : "GATE OPEN"}</span><span>{policy.pair}</span></div>
+          <div className="status-bottom"><span><span className="tiny-dot" /> {configured && !snapshot ? "STATE PENDING" : gate.closed ? "TEMPORARY HOLD" : "GATE OPEN"}</span><span>{policy.pair}</span></div>
         </div>
       </section>
 
