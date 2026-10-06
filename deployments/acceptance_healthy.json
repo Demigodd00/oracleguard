@@ -1,0 +1,99 @@
+{
+  "assessment": {
+    "assessed_at": 1791312210,
+    "deviation_bps": 2,
+    "duration_seconds": 900,
+    "feed_price_e8": 269474000000,
+    "feed_url": "https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd&include_last_updated_at=true",
+    "id": 1,
+    "note": "Review healthy: independently inspect committed sources",
+    "opened_at": 1791312169,
+    "pair": "ETH-USD",
+    "pause_until": 0,
+    "reason": "WITHIN_POLICY",
+    "reference_a_url": "https://api.exchange.coinbase.com/products/ETH-USD/trades?limit=1",
+    "reference_b_url": "https://api.kraken.com/0/public/PostTrade?symbol=ETH/USD&count=1",
+    "reference_mid_e8": 269540000000,
+    "requester": "0xaA8Ea2f88B19cCeF410CB168286EC0Edb0FD2115",
+    "samples": {
+      "feed": {
+        "http_status": 200,
+        "observed_at": 1791312110,
+        "ok": true,
+        "price_e8": 269474000000,
+        "raw_body": "{\"ethereum\":{\"usd\":2694.74,\"last_updated_at\":1791312110}}",
+        "reason": "",
+        "sha256": "502337c30570b955626d93eb62f3f1321084507b343c5429c4158c3e6faaf508",
+        "url": "https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd&include_last_updated_at=true"
+      },
+      "reference_a": {
+        "http_status": 200,
+        "observed_at": 1791312212,
+        "ok": true,
+        "price_e8": 269537000000,
+        "raw_body": "[{\"trade_id\":847119201,\"side\":\"buy\",\"size\":\"0.06095293\",\"price\":\"2695.37000000\",\"time\":\"2026-10-06T18:43:32.002356Z\"}]",
+        "reason": "",
+        "sha256": "97563121860183833912bfe963a47b18ee45d5a63e91902d943cc0ce1ebb697b",
+        "url": "https://api.exchange.coinbase.com/products/ETH-USD/trades?limit=1"
+      },
+      "reference_b": {
+        "http_status": 200,
+        "observed_at": 1791312208,
+        "ok": true,
+        "price_e8": 269543000000,
+        "raw_body": "{\"error\":[],\"result\":{\"last_ts\":\"2026-10-06T18:43:28.814687064Z\",\"count\":1,\"trades\":[{\"trade_id\":\"OPIWQQ-2KVB3-A45ZZQ\",\"price\":\"2695.43000\",\"quantity\":\"0.04943611\",\"symbol\":\"ETH/USD\",\"description\":\"Ethereum / US Dollar\",\"base_asset\":\"ETH\",\"base_notation\":\"UNIT\",\"base_dti_code\":\"1STM49Z4L\",\"base_dti_short_name\":\"ETH\",\"quote_asset\":\"USD\",\"quote_notation\":\"MONE\",\"quote_dti_code\":\"\",\"quote_dti_short_name\":\"\",\"trade_venue\":\"PGSL\",\"trade_ts\":\"2026-10-06T18:43:28.814687064Z\",\"publication_venue\":\"PGSL\",\"publication_ts\":\"2026-10-06T18:43:28.814687064Z\"}]}}",
+        "reason": "",
+        "sha256": "b0b9dc04a7c3da2d24a7209144b7ac81b4883fe80982e7f2335a47e83a2a2905",
+        "url": "https://api.kraken.com/0/public/PostTrade?symbol=ETH/USD&count=1"
+      }
+    },
+    "status": "NO_TRIGGER"
+  },
+  "checks": {
+    "evidence_snapshots_present": true,
+    "expected_decision": true,
+    "gate_effect": true,
+    "open_readback": true
+  },
+  "contract": "0xa6CED7CA87Da7e2195928efeD31DEe9a08d154E6",
+  "fixture_disclosure": "Three live independent market APIs.",
+  "gate_after": {
+    "assessment_count": "1",
+    "borrow_count": "0",
+    "checked_at": "1791312261",
+    "closed": false,
+    "funds_held": false,
+    "suspended_until": "0"
+  },
+  "network": "studionet",
+  "scenario": "healthy",
+  "starting_assessment_count": 0,
+  "transactions": {
+    "evaluate": {
+      "args": [
+        1
+      ],
+      "consensus_result": "MAJORITY_AGREE",
+      "hash": "0x100cb42e6bc4f3a7a04dd1ee4d204ccabb1cc7e7d2de4995dd80e50bf45aaf2a",
+      "leader_execution_succeeded": true,
+      "method": "evaluate_assessment",
+      "sender": "0x96DcE3d47E038f3D91e5207936A98bb57083f084",
+      "state": "checked",
+      "status": "FINALIZED"
+    },
+    "open": {
+      "args": [
+        900,
+        "Review healthy: independently inspect committed sources"
+      ],
+      "consensus_result": "MAJORITY_AGREE",
+      "hash": "0xd9bf21d1d8b2da58b99f4122e572356deb278342ba8ed6e7d05499dbcfa0bad7",
+      "leader_execution_succeeded": true,
+      "method": "open_assessment",
+      "sender": "0xaA8Ea2f88B19cCeF410CB168286EC0Edb0FD2115",
+      "state": "checked",
+      "status": "FINALIZED"
+    }
+  },
+  "updated_at_utc": "2026-10-06T18:44:22.582196+00:00"
+}

@@ -11,6 +11,9 @@ NOW = int(datetime(2026, 10, 6, 12, tzinfo=timezone.utc).timestamp())
 FEED = "https://feed.example.org/eth-usd.json"
 REF_A = "https://reference-a.example.net/eth-usd.json"
 REF_B = "https://reference-b.example.com/eth-usd.json"
+COINBASE = "https://api.exchange.coinbase.com/products/ETH-USD/trades?limit=1"
+KRAKEN = "https://api.kraken.com/0/public/PostTrade?symbol=ETH/USD&count=1"
+COINGECKO = "https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd&include_last_updated_at=true"
 
 
 def deploy(vm, direct_deploy, owner):
@@ -75,10 +78,25 @@ def test_price_deviation_closes_only_for_bounded_period(direct_vm, direct_deploy
 
 def test_stale_feed_triggers_when_references_are_fresh(direct_vm, direct_deploy, direct_alice, direct_bob):
     contract = deploy(direct_vm, direct_deploy, direct_alice)
-    mock(direct_vm, feed_age=601)
+    mock(direct_vm, feed_age=611)
     assessment_id, result = open_and_evaluate(direct_vm, contract, direct_bob)
     assert result == "TRIGGER_CONFIRMED"
     assert contract.get_assessment(assessment_id)["reason"] == "FEED_STALE"
+    assert contract.get_assessment(assessment_id)["samples"]["feed"]["observed_at"] == NOW - 611
+
+
+def test_feed_older_than_a_day_still_triggers_and_keeps_evidence(
+    direct_vm, direct_deploy, direct_alice, direct_bob
+):
+    contract = deploy(direct_vm, direct_deploy, direct_alice)
+    mock(direct_vm, feed_age=86401)
+    assessment_id, result = open_and_evaluate(direct_vm, contract, direct_bob)
+    assert result == "TRIGGER_CONFIRMED"
+    record = contract.get_assessment(assessment_id)
+    assert record["reason"] == "FEED_STALE"
+    assert record["samples"]["feed"]["raw_body"]
+    assert len(record["samples"]["feed"]["sha256"]) == 64
+    assert direct_vm.run_validator(leader_result=direct_vm._captured_validators[-1][0]) is True
 
 
 def test_conflicting_references_and_missing_source_create_no_authority(
@@ -108,6 +126,42 @@ def test_validator_independently_rechecks_material_decision(
     direct_vm.clear_mocks()
     mock(direct_vm, feed=3000)
     assert direct_vm.run_validator(leader_result=proposed) is False
+
+
+def test_validator_rejects_forged_deviation_and_evidence(
+    direct_vm, direct_deploy, direct_alice, direct_bob
+):
+    contract = deploy(direct_vm, direct_deploy, direct_alice)
+    mock(direct_vm)
+    open_and_evaluate(direct_vm, contract, direct_bob)
+    proposed = direct_vm._captured_validators[-1][0]
+    proposed["deviation_bps"] = 999999
+    assert direct_vm.run_validator(leader_result=proposed) is False
+    proposed["deviation_bps"] = 0
+    proposed["samples"]["feed"]["raw_body"] = '{"price_e8":1}'
+    assert direct_vm.run_validator(leader_result=proposed) is False
+
+
+def test_independent_public_api_adapters(direct_vm, direct_deploy, direct_alice, direct_bob):
+    direct_vm.warp(TIME)
+    direct_vm.sender = direct_alice
+    contract = direct_deploy(str(CONTRACT), "ETH-USD", COINGECKO, COINBASE, KRAKEN,
+                             600, 200, 1000, 1800, sdk_version=SDK)
+    direct_vm.mock_web(re.escape(COINGECKO), {"status": 200, "body": json.dumps({
+        "ethereum": {"usd": 3000.0, "last_updated_at": NOW - 15}})})
+    direct_vm.mock_web(re.escape(COINBASE), {"status": 200, "body": json.dumps([{
+        "price": "3001.25", "time": "2026-10-06T11:59:45.123456Z"}])})
+    direct_vm.mock_web(re.escape(KRAKEN), {"status": 200, "body": json.dumps({
+        "error": [], "result": {"trades": [{"price": "2999.50", "symbol": "ETH/USD",
+        "trade_ts": "2026-10-06T11:59:45.123456789Z"}]}})})
+    direct_vm.sender = direct_bob
+    assessment_id = contract.open_assessment(900, "Live API parser check")
+    assert contract.evaluate_assessment(assessment_id) == "NO_TRIGGER"
+    record = contract.get_assessment(assessment_id)
+    assert record["samples"]["feed"]["price_e8"] == 3000 * 10**8
+    assert record["samples"]["reference_a"]["price_e8"] == 300125000000
+    assert record["samples"]["reference_b"]["price_e8"] == 299950000000
+    assert direct_vm.run_validator(leader_result=direct_vm._captured_validators[-1][0]) is True
 
 
 def test_policy_and_one_shot_assessment_rules(direct_vm, direct_deploy, direct_alice, direct_bob):

@@ -1,0 +1,21 @@
+{
+  "address": "0xa6CED7CA87Da7e2195928efeD31DEe9a08d154E6",
+  "deployed_at_utc": "2026-10-06T18:40:56.700407+00:00",
+  "deployment_transaction": "0x061e10dc9cf8c756bcd36adcd59329cb30facab320ff0ee1b77f9c0d597f3358",
+  "network": "studionet",
+  "note": "Immutable charter; signer private key discarded; no owner-only methods.",
+  "policy": {
+    "feed_url": "https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd&include_last_updated_at=true",
+    "max_age_seconds": "600",
+    "max_pause_seconds": "1800",
+    "max_reference_spread_bps": "200",
+    "owner": "0xf8Be92C5aFcb207fEfadcB2606F5Ab26424ED623",
+    "pair": "ETH-USD",
+    "reference_a_url": "https://api.exchange.coinbase.com/products/ETH-USD/trades?limit=1",
+    "reference_b_url": "https://api.kraken.com/0/public/PostTrade?symbol=ETH/USD&count=1",
+    "trigger_deviation_bps": "1000",
+    "version": "1.1.0"
+  },
+  "signer": "0xf8Be92C5aFcb207fEfadcB2606F5Ab26424ED623",
+  "source_sha256": "22b5b93a7b639e13b0e5a74f113d18bf60d0d885168e605e98cd8878828cec72"
+}

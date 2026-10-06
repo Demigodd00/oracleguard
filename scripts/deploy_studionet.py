@@ -23,7 +23,6 @@ from genlayer_py.types import TransactionHashVariant, TransactionStatus
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "contracts" / "OracleGuard.py"
-RECORD = ROOT / "deployments" / "studionet.json"
 
 
 def arguments() -> argparse.Namespace:
@@ -36,6 +35,7 @@ def arguments() -> argparse.Namespace:
     parser.add_argument("--max-reference-spread-bps", type=int, default=200)
     parser.add_argument("--trigger-deviation-bps", type=int, default=1000)
     parser.add_argument("--max-pause-seconds", type=int, default=1800)
+    parser.add_argument("--record", default="studionet.json", help="Filename under deployments/")
     return parser.parse_args()
 
 
@@ -61,6 +61,9 @@ def tx_hex(value: object) -> str:
 
 def main() -> None:
     options = arguments()
+    if Path(options.record).name != options.record or not options.record.endswith(".json"):
+        raise SystemExit("--record must be a .json filename")
+    record_path = ROOT / "deployments" / options.record
     urls = [options.feed_url, options.reference_a_url, options.reference_b_url]
     validate_urls(urls)
     source = SOURCE.read_text(encoding="utf-8")
@@ -113,8 +116,8 @@ def main() -> None:
         "signer": signer.address,
         "note": "Immutable charter; signer private key discarded; no owner-only methods.",
     }
-    RECORD.write_text(json.dumps(record, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    print(json.dumps({"step": "finalized", "address": address, "record": str(RECORD)}))
+    record_path.write_text(json.dumps(record, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    print(json.dumps({"step": "finalized", "address": address, "record": str(record_path)}))
 
 
 if __name__ == "__main__":

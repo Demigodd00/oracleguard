@@ -7,10 +7,14 @@ import json
 import re
 
 
-VERSION = "1.0.0"
+VERSION = "1.1.0"
 MAX_BODY_BYTES = 4096
 MAX_ASSESSMENTS_PAGE = 25
+MAX_FUTURE_SECONDS = 3600
 HTTPS_URL = re.compile(r"https://([a-z0-9][a-z0-9.-]*[a-z0-9])(/[A-Za-z0-9._~:/?&=%+-]*)?", re.I)
+COINBASE_TRADES = "https://api.exchange.coinbase.com/products/ETH-USD/trades?limit=1"
+KRAKEN_POST_TRADE = "https://api.kraken.com/0/public/PostTrade?symbol=ETH/USD&count=1"
+COINGECKO_PRICE = "https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd&include_last_updated_at=true"
 
 
 def _fail(code: str) -> None:
@@ -33,6 +37,28 @@ def _host(url: str) -> str:
 
 def _dump(value: dict) -> str:
     return json.dumps(value, sort_keys=True, separators=(",", ":"))
+
+
+def _price_e8(value: str) -> int:
+    rendered = str(value)
+    match = re.fullmatch(r"([0-9]{1,12})(?:\.([0-9]{1,8}))?", rendered)
+    if match is None:
+        _fail("invalid_price")
+    fractional = (match.group(2) or "").ljust(8, "0")
+    amount = int(match.group(1)) * 10**8 + int(fractional or "0")
+    if amount <= 0 or amount > 10**20:
+        _fail("invalid_price")
+    return amount
+
+
+def _iso_unix(value: str) -> int:
+    if not isinstance(value, str) or re.fullmatch(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,9})?Z", value) is None:
+        _fail("invalid_timestamp")
+    try:
+        return int(datetime.fromisoformat(value.replace("Z", "+00:00")).timestamp())
+    except ValueError:
+        _fail("invalid_timestamp")
+    return 0
 
 
 class OracleGuard(gl.Contract):
@@ -166,59 +192,120 @@ class OracleGuard(gl.Contract):
             "feed_price_e8": 0,
             "reference_mid_e8": 0,
             "deviation_bps": 0,
+            "samples": {},
         }
         self.assessment_count = u256(number)
         self.assessments[str(number)] = _dump(record)
         return u256(number)
 
-    def _sample(self, url: str, now: int) -> dict:
+    def _decode_sample(self, url: str, http_status: int, raw_body: str, now: int) -> dict:
+        raw_bytes = raw_body.encode("utf-8")
+        sample = {
+            "url": url,
+            "http_status": http_status,
+            "raw_body": raw_body,
+            "sha256": hashlib.sha256(raw_bytes).hexdigest() if raw_body else "",
+            "ok": False,
+            "reason": "SOURCE_UNAVAILABLE",
+            "price_e8": 0,
+            "observed_at": 0,
+        }
+        if http_status != 200 or not raw_body or len(raw_bytes) > MAX_BODY_BYTES:
+            return sample
+        try:
+            body = json.loads(raw_body, parse_float=str)
+            if url == COINBASE_TRADES:
+                if self.pair != "ETH-USD" or not isinstance(body, list) or not body:
+                    raise ValueError("coinbase_shape")
+                entry = body[0]
+                price = _price_e8(entry["price"])
+                observed = _iso_unix(entry["time"])
+            elif url == KRAKEN_POST_TRADE:
+                if self.pair != "ETH-USD" or body.get("error") != []:
+                    raise ValueError("kraken_error")
+                trades = body["result"]["trades"]
+                if not isinstance(trades, list) or not trades or trades[0]["symbol"] != "ETH/USD":
+                    raise ValueError("kraken_shape")
+                price = _price_e8(trades[0]["price"])
+                observed = _iso_unix(trades[0]["trade_ts"])
+            elif url == COINGECKO_PRICE:
+                if self.pair != "ETH-USD":
+                    raise ValueError("coingecko_pair")
+                entry = body["ethereum"]
+                price = _price_e8(entry["usd"])
+                observed = entry["last_updated_at"]
+            else:
+                if body.get("pair") != self.pair:
+                    raise ValueError("pair_mismatch")
+                price = body["price_e8"]
+                observed = body["observed_at"]
+            if type(price) is not int or type(observed) is not int or price <= 0 or price > 10**20:
+                raise ValueError("invalid_sample")
+        except (ValueError, KeyError, TypeError, IndexError, AttributeError, gl.vm.UserError):
+            sample["reason"] = "INVALID_SAMPLE"
+            return sample
+        if observed <= 0 or observed > now + MAX_FUTURE_SECONDS:
+            sample["reason"] = "INVALID_TIMESTAMP"
+            return sample
+        sample.update({"ok": True, "reason": "", "price_e8": price, "observed_at": observed})
+        return sample
+
+    def _read_sample(self, url: str, now: int) -> dict:
         try:
             response = gl.nondet.web.get(url)
         except Exception:
-            return {"ok": False, "reason": "FETCH_FAILED"}
+            return self._decode_sample(url, 0, "", now)
         if response.status != 200 or not response.body or len(response.body) > MAX_BODY_BYTES:
-            return {"ok": False, "reason": "SOURCE_UNAVAILABLE"}
+            return self._decode_sample(url, response.status, "", now)
         try:
-            body = json.loads(response.body.decode("utf-8"))
-        except (ValueError, UnicodeDecodeError):
-            return {"ok": False, "reason": "INVALID_JSON"}
-        if not isinstance(body, dict) or body.get("pair") != self.pair:
-            return {"ok": False, "reason": "PAIR_MISMATCH"}
-        price = body.get("price_e8")
-        observed = body.get("observed_at")
-        if type(price) is not int or type(observed) is not int or price <= 0 or price > 10**20:
-            return {"ok": False, "reason": "INVALID_SAMPLE"}
-        if observed > now + 30 or observed < now - 86400:
-            return {"ok": False, "reason": "INVALID_TIMESTAMP"}
+            raw_body = response.body.decode("utf-8")
+        except UnicodeDecodeError:
+            return self._decode_sample(url, response.status, "", now)
+        return self._decode_sample(url, response.status, raw_body, now)
+
+    def _decide(self, samples: dict, now: int) -> dict:
+        feed = samples["feed"]
+        a = samples["reference_a"]
+        b = samples["reference_b"]
+        status, reason, mid, deviation = "INSUFFICIENT_EVIDENCE", "SOURCE_INVALID", 0, 0
+        if feed["ok"] and a["ok"] and b["ok"]:
+            max_age = int(self.max_age_seconds)
+            if now - a["observed_at"] > max_age or now - b["observed_at"] > max_age:
+                reason = "REFERENCE_STALE"
+            elif abs(a["observed_at"] - b["observed_at"]) > 120:
+                reason = "REFERENCES_TIME_CONFLICT"
+            else:
+                mid = (a["price_e8"] + b["price_e8"]) // 2
+                spread = abs(a["price_e8"] - b["price_e8"]) * 10000 // mid
+                if spread > int(self.max_reference_spread_bps):
+                    reason = "REFERENCES_CONFLICT"
+                else:
+                    deviation = abs(feed["price_e8"] - mid) * 10000 // mid
+                    reference_time = min(a["observed_at"], b["observed_at"])
+                    if reference_time - feed["observed_at"] > max_age:
+                        status, reason = "TRIGGER_CONFIRMED", "FEED_STALE"
+                    elif feed["observed_at"] - reference_time > 120:
+                        reason = "SAMPLES_NOT_CONTEMPORANEOUS"
+                    elif deviation >= int(self.trigger_deviation_bps):
+                        status, reason = "TRIGGER_CONFIRMED", "PRICE_DEVIATION"
+                    else:
+                        status, reason = "NO_TRIGGER", "WITHIN_POLICY"
         return {
-            "ok": True,
-            "price": price,
-            "observed_at": observed,
-            "digest": hashlib.sha256(response.body).hexdigest(),
+            "status": status,
+            "reason": reason,
+            "feed_price_e8": feed["price_e8"] if feed["ok"] else 0,
+            "reference_mid_e8": mid,
+            "deviation_bps": deviation,
+            "samples": samples,
         }
 
     def _inspect(self, record: dict, now: int) -> dict:
-        feed = self._sample(record["feed_url"], now)
-        a = self._sample(record["reference_a_url"], now)
-        b = self._sample(record["reference_b_url"], now)
-        samples = (feed, a, b)
-        if any(not item["ok"] for item in samples):
-            return {"status": "INSUFFICIENT_EVIDENCE", "reason": "SOURCE_INVALID", "feed_price_e8": 0, "reference_mid_e8": 0, "deviation_bps": 0}
-        max_age = int(self.max_age_seconds)
-        if now - a["observed_at"] > max_age or now - b["observed_at"] > max_age:
-            return {"status": "INSUFFICIENT_EVIDENCE", "reason": "REFERENCE_STALE", "feed_price_e8": feed["price"], "reference_mid_e8": 0, "deviation_bps": 0}
-        mid = (a["price"] + b["price"]) // 2
-        spread = abs(a["price"] - b["price"]) * 10000 // mid
-        if spread > int(self.max_reference_spread_bps):
-            return {"status": "INSUFFICIENT_EVIDENCE", "reason": "REFERENCES_CONFLICT", "feed_price_e8": feed["price"], "reference_mid_e8": mid, "deviation_bps": 0}
-        deviation = abs(feed["price"] - mid) * 10000 // mid
-        if now - feed["observed_at"] > max_age:
-            status, reason = "TRIGGER_CONFIRMED", "FEED_STALE"
-        elif deviation >= int(self.trigger_deviation_bps):
-            status, reason = "TRIGGER_CONFIRMED", "PRICE_DEVIATION"
-        else:
-            status, reason = "NO_TRIGGER", "WITHIN_POLICY"
-        return {"status": status, "reason": reason, "feed_price_e8": feed["price"], "reference_mid_e8": mid, "deviation_bps": deviation}
+        samples = {
+            "feed": self._read_sample(record["feed_url"], now),
+            "reference_a": self._read_sample(record["reference_a_url"], now),
+            "reference_b": self._read_sample(record["reference_b_url"], now),
+        }
+        return self._decide(samples, now)
 
     @gl.public.write
     def evaluate_assessment(self, assessment_id: u256) -> str:
@@ -237,14 +324,29 @@ class OracleGuard(gl.Contract):
             theirs = leader.calldata
             if theirs.get("status") != ours["status"] or theirs.get("reason") != ours["reason"]:
                 return False
-            if ours["status"] == "INSUFFICIENT_EVIDENCE":
-                return True
-            for field in ("feed_price_e8", "reference_mid_e8"):
-                value = theirs.get(field)
-                reference = ours[field]
-                if type(value) is not int or abs(value - reference) * 10000 > reference * 200:
+            proposed = theirs.get("samples")
+            if not isinstance(proposed, dict) or set(proposed) != {"feed", "reference_a", "reference_b"}:
+                return False
+            for role, url_key in (("feed", "feed_url"), ("reference_a", "reference_a_url"), ("reference_b", "reference_b_url")):
+                item = proposed[role]
+                if not isinstance(item, dict) or item.get("url") != record[url_key]:
                     return False
-            return True
+                raw = item.get("raw_body")
+                http_status = item.get("http_status")
+                if type(raw) is not str or type(http_status) is not int or len(raw.encode("utf-8")) > MAX_BODY_BYTES:
+                    return False
+                if item != self._decode_sample(record[url_key], http_status, raw, now):
+                    return False
+                actual = ours["samples"][role]
+                if item["ok"] != actual["ok"] or item["reason"] != actual["reason"]:
+                    return False
+                if item["ok"]:
+                    own_price = actual["price_e8"]
+                    if abs(item["price_e8"] - own_price) * 10000 > own_price * 200:
+                        return False
+                    if abs(item["observed_at"] - actual["observed_at"]) > 300:
+                        return False
+            return theirs == self._decide(proposed, now)
 
         result = gl.vm.run_nondet_unsafe(inspect, validate)
         record.update(result)

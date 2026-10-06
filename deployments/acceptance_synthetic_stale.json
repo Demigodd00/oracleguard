@@ -1,0 +1,99 @@
+{
+  "assessment": {
+    "assessed_at": 1791312351,
+    "deviation_bps": 6,
+    "duration_seconds": 900,
+    "feed_price_e8": 269600000000,
+    "feed_url": "https://raw.githubusercontent.com/Demigodd00/oracleguard/886c3f3/evidence/stale-feed.json",
+    "id": 1,
+    "note": "Review synthetic_stale: independently inspect committed sources",
+    "opened_at": 1791312309,
+    "pair": "ETH-USD",
+    "pause_until": 1791313251,
+    "reason": "FEED_STALE",
+    "reference_a_url": "https://api.exchange.coinbase.com/products/ETH-USD/trades?limit=1",
+    "reference_b_url": "https://api.kraken.com/0/public/PostTrade?symbol=ETH/USD&count=1",
+    "reference_mid_e8": 269420500000,
+    "requester": "0xa130a620e27E5f51E7a6B8205733FF0292821d5c",
+    "samples": {
+      "feed": {
+        "http_status": 200,
+        "observed_at": 1791223200,
+        "ok": true,
+        "price_e8": 269600000000,
+        "raw_body": "{\"pair\":\"ETH-USD\",\"price_e8\":269600000000,\"observed_at\":1791223200}\n",
+        "reason": "",
+        "sha256": "fab2b2e46e6314e0cc6b4e71ba0b1665a360ce5303e5960ce6d083544d468446",
+        "url": "https://raw.githubusercontent.com/Demigodd00/oracleguard/886c3f3/evidence/stale-feed.json"
+      },
+      "reference_a": {
+        "http_status": 200,
+        "observed_at": 1791312345,
+        "ok": true,
+        "price_e8": 269452000000,
+        "raw_body": "[{\"trade_id\":847119579,\"side\":\"sell\",\"size\":\"0.00527887\",\"price\":\"2694.52000000\",\"time\":\"2026-10-06T18:45:45.652360Z\"}]",
+        "reason": "",
+        "sha256": "057da70c2932b9a739d6486dc5c2eed611c9d696eb0a2c9cf80138aa5bac1323",
+        "url": "https://api.exchange.coinbase.com/products/ETH-USD/trades?limit=1"
+      },
+      "reference_b": {
+        "http_status": 200,
+        "observed_at": 1791312355,
+        "ok": true,
+        "price_e8": 269389000000,
+        "raw_body": "{\"error\":[],\"result\":{\"last_ts\":\"2026-10-06T18:45:55.344283338Z\",\"count\":1,\"trades\":[{\"trade_id\":\"O4H6VS-44U7X-V7Z4CO\",\"price\":\"2693.89000\",\"quantity\":\"0.00833486\",\"symbol\":\"ETH/USD\",\"description\":\"Ethereum / US Dollar\",\"base_asset\":\"ETH\",\"base_notation\":\"UNIT\",\"base_dti_code\":\"1STM49Z4L\",\"base_dti_short_name\":\"ETH\",\"quote_asset\":\"USD\",\"quote_notation\":\"MONE\",\"quote_dti_code\":\"\",\"quote_dti_short_name\":\"\",\"trade_venue\":\"PGSL\",\"trade_ts\":\"2026-10-06T18:45:55.344283338Z\",\"publication_venue\":\"PGSL\",\"publication_ts\":\"2026-10-06T18:45:55.344283338Z\"}]}}",
+        "reason": "",
+        "sha256": "8b0310562dc8e85f26c09bd6e0672731843306ba74116198cc733f185e4706f5",
+        "url": "https://api.kraken.com/0/public/PostTrade?symbol=ETH/USD&count=1"
+      }
+    },
+    "status": "TRIGGER_CONFIRMED"
+  },
+  "checks": {
+    "evidence_snapshots_present": true,
+    "expected_decision": true,
+    "gate_effect": true,
+    "open_readback": true
+  },
+  "contract": "0x81e640216983AA95e6B917Dc02CeED802AaaA228",
+  "fixture_disclosure": "The stale source is a public synthetic fixture, not a real oracle incident.",
+  "gate_after": {
+    "assessment_count": "1",
+    "borrow_count": "0",
+    "checked_at": "1791312395",
+    "closed": true,
+    "funds_held": false,
+    "suspended_until": "1791313251"
+  },
+  "network": "studionet",
+  "scenario": "synthetic_stale",
+  "starting_assessment_count": 0,
+  "transactions": {
+    "evaluate": {
+      "args": [
+        1
+      ],
+      "consensus_result": "MAJORITY_AGREE",
+      "hash": "0x42d36bc0078430e81ffba8e040a1d7b8ee54d815606bb25e14fa1d67d7c490b3",
+      "leader_execution_succeeded": true,
+      "method": "evaluate_assessment",
+      "sender": "0x365C70b213ddfAEdD34b6f05569AE11e44408069",
+      "state": "checked",
+      "status": "FINALIZED"
+    },
+    "open": {
+      "args": [
+        900,
+        "Review synthetic_stale: independently inspect committed sources"
+      ],
+      "consensus_result": "MAJORITY_AGREE",
+      "hash": "0xfc3693df85a67f04890e1e054084501157956514132558123a5944f8f7f1151d",
+      "leader_execution_succeeded": true,
+      "method": "open_assessment",
+      "sender": "0xa130a620e27E5f51E7a6B8205733FF0292821d5c",
+      "state": "checked",
+      "status": "FINALIZED"
+    }
+  },
+  "updated_at_utc": "2026-10-06T18:46:36.499276+00:00"
+}
