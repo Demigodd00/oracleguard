@@ -67,12 +67,18 @@ def test_price_deviation_closes_only_for_bounded_period(direct_vm, direct_deploy
     assert record["reason"] == "PRICE_DEVIATION"
     assert record["pause_until"] == NOW + 900
     assert contract.get_gate()["closed"] is True
+    assert contract.get_gate()["remaining_seconds"] == "900"
     assert direct_vm.run_validator(leader_result=direct_vm._captured_validators[-1][0]) is True
     direct_vm.sender = direct_alice
     with direct_vm.expect_revert("borrow_gate_closed"):
         contract.request_borrow(1)
+    direct_vm.warp("2026-10-06T12:02:00Z")
+    assert contract.get_gate()["remaining_seconds"] == "780"
+    with direct_vm.expect_revert("borrow_gate_closed"):
+        contract.request_borrow(1)
     direct_vm.warp("2026-10-06T12:15:01Z")
     assert contract.get_gate()["closed"] is False
+    assert contract.get_gate()["remaining_seconds"] == "0"
     assert contract.request_borrow(1) == 1
 
 
@@ -166,8 +172,11 @@ def test_independent_public_api_adapters(direct_vm, direct_deploy, direct_alice,
 
 def test_policy_and_one_shot_assessment_rules(direct_vm, direct_deploy, direct_alice, direct_bob):
     contract = deploy(direct_vm, direct_deploy, direct_alice)
+    assert contract.get_policy()["min_pause_seconds"] == "900"
     assert contract.get_policy()["max_pause_seconds"] == "1800"
     direct_vm.sender = direct_bob
+    with direct_vm.expect_revert("duration_out_of_bounds"):
+        contract.open_assessment(60, "Too short for consensus")
     with direct_vm.expect_revert("duration_out_of_bounds"):
         contract.open_assessment(1801, "Too long")
     with direct_vm.expect_revert("invalid_note"):

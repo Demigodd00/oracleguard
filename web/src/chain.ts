@@ -10,10 +10,11 @@ declare global { interface Window { ethereum?: Provider } }
 export interface Policy {
   version: string; owner: string; pair: string; feed_url: string;
   reference_a_url: string; reference_b_url: string; max_age_seconds: string;
-  max_reference_spread_bps: string; trigger_deviation_bps: string; max_pause_seconds: string;
+  max_reference_spread_bps: string; trigger_deviation_bps: string;
+  min_pause_seconds: string; max_pause_seconds: string;
 }
 export interface Gate {
-  closed: boolean; suspended_until: string; borrow_count: string;
+  closed: boolean; suspended_until: string; remaining_seconds: string; borrow_count: string;
   assessment_count: string; checked_at: string; funds_held: boolean;
 }
 export interface Assessment {

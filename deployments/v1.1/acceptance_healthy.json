@@ -1,49 +1,49 @@
 {
   "assessment": {
-    "assessed_at": 1791449074,
-    "deviation_bps": 10,
+    "assessed_at": 1791312210,
+    "deviation_bps": 2,
     "duration_seconds": 900,
-    "feed_price_e8": 255795000000,
+    "feed_price_e8": 269474000000,
     "feed_url": "https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd&include_last_updated_at=true",
     "id": 1,
     "note": "Review healthy: independently inspect committed sources",
-    "opened_at": 1791449029,
+    "opened_at": 1791312169,
     "pair": "ETH-USD",
     "pause_until": 0,
     "reason": "WITHIN_POLICY",
     "reference_a_url": "https://api.exchange.coinbase.com/products/ETH-USD/trades?limit=1",
     "reference_b_url": "https://api.kraken.com/0/public/PostTrade?symbol=ETH/USD&count=1",
-    "reference_mid_e8": 256065500000,
-    "requester": "0x4E36e017C27d8CCF4Ab5eC8C065F3BDfaf9CdE95",
+    "reference_mid_e8": 269540000000,
+    "requester": "0xaA8Ea2f88B19cCeF410CB168286EC0Edb0FD2115",
     "samples": {
       "feed": {
         "http_status": 200,
-        "observed_at": 1791448980,
+        "observed_at": 1791312110,
         "ok": true,
-        "price_e8": 255795000000,
-        "raw_body": "{\"ethereum\":{\"usd\":2557.95,\"last_updated_at\":1791448980}}",
+        "price_e8": 269474000000,
+        "raw_body": "{\"ethereum\":{\"usd\":2694.74,\"last_updated_at\":1791312110}}",
         "reason": "",
-        "sha256": "ddbac5d8b4c30a8f1e473127ac95d92f5e00bfc90c371ddae8abd46ab7b7a9cc",
+        "sha256": "502337c30570b955626d93eb62f3f1321084507b343c5429c4158c3e6faaf508",
         "url": "https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd&include_last_updated_at=true"
       },
       "reference_a": {
         "http_status": 200,
-        "observed_at": 1791449068,
+        "observed_at": 1791312212,
         "ok": true,
-        "price_e8": 256039000000,
-        "raw_body": "[{\"trade_id\":847461600,\"side\":\"sell\",\"size\":\"0.47627042\",\"price\":\"2560.39000000\",\"time\":\"2026-10-08T08:44:28.546022Z\"}]",
+        "price_e8": 269537000000,
+        "raw_body": "[{\"trade_id\":847119201,\"side\":\"buy\",\"size\":\"0.06095293\",\"price\":\"2695.37000000\",\"time\":\"2026-10-06T18:43:32.002356Z\"}]",
         "reason": "",
-        "sha256": "d1b4d01fda32eb6b89e79ea6c8d042722f61fb02898eaa903f738723daf3679d",
+        "sha256": "97563121860183833912bfe963a47b18ee45d5a63e91902d943cc0ce1ebb697b",
         "url": "https://api.exchange.coinbase.com/products/ETH-USD/trades?limit=1"
       },
       "reference_b": {
         "http_status": 200,
-        "observed_at": 1791449075,
+        "observed_at": 1791312208,
         "ok": true,
-        "price_e8": 256092000000,
-        "raw_body": "{\"error\":[],\"result\":{\"last_ts\":\"2026-10-08T08:44:35.200456410Z\",\"count\":1,\"trades\":[{\"trade_id\":\"OI6X7F-QIYTC-QHWFL3\",\"price\":\"2560.92000\",\"quantity\":\"0.01300000\",\"symbol\":\"ETH/USD\",\"description\":\"Ethereum / US Dollar\",\"base_asset\":\"ETH\",\"base_notation\":\"UNIT\",\"base_dti_code\":\"1STM49Z4L\",\"base_dti_short_name\":\"ETH\",\"quote_asset\":\"USD\",\"quote_notation\":\"MONE\",\"quote_dti_code\":\"\",\"quote_dti_short_name\":\"\",\"trade_venue\":\"PGSL\",\"trade_ts\":\"2026-10-08T08:44:35.200456410Z\",\"publication_venue\":\"PGSL\",\"publication_ts\":\"2026-10-08T08:44:35.200456410Z\"}]}}",
+        "price_e8": 269543000000,
+        "raw_body": "{\"error\":[],\"result\":{\"last_ts\":\"2026-10-06T18:43:28.814687064Z\",\"count\":1,\"trades\":[{\"trade_id\":\"OPIWQQ-2KVB3-A45ZZQ\",\"price\":\"2695.43000\",\"quantity\":\"0.04943611\",\"symbol\":\"ETH/USD\",\"description\":\"Ethereum / US Dollar\",\"base_asset\":\"ETH\",\"base_notation\":\"UNIT\",\"base_dti_code\":\"1STM49Z4L\",\"base_dti_short_name\":\"ETH\",\"quote_asset\":\"USD\",\"quote_notation\":\"MONE\",\"quote_dti_code\":\"\",\"quote_dti_short_name\":\"\",\"trade_venue\":\"PGSL\",\"trade_ts\":\"2026-10-06T18:43:28.814687064Z\",\"publication_venue\":\"PGSL\",\"publication_ts\":\"2026-10-06T18:43:28.814687064Z\"}]}}",
         "reason": "",
-        "sha256": "28729a7a333db56da45ddf66eee1107a6b02d9e5ea55cd27536066bc7d6440ea",
+        "sha256": "b0b9dc04a7c3da2d24a7209144b7ac81b4883fe80982e7f2335a47e83a2a2905",
         "url": "https://api.kraken.com/0/public/PostTrade?symbol=ETH/USD&count=1"
       }
     },
@@ -55,15 +55,14 @@
     "gate_effect": true,
     "open_readback": true
   },
-  "contract": "0x2AACfD82195A342e47a4C4589802f897F3BEC559",
+  "contract": "0xa6CED7CA87Da7e2195928efeD31DEe9a08d154E6",
   "fixture_disclosure": "Three live independent market APIs.",
   "gate_after": {
     "assessment_count": "1",
     "borrow_count": "0",
-    "checked_at": "1791449116",
+    "checked_at": "1791312261",
     "closed": false,
     "funds_held": false,
-    "remaining_seconds": "0",
     "suspended_until": "0"
   },
   "network": "studionet",
@@ -75,10 +74,10 @@
         1
       ],
       "consensus_result": "MAJORITY_AGREE",
-      "hash": "0x61dc32986056d4c41751e88cd16d7c5c34d7c51c1b63e3a3215418fb734e2c03",
+      "hash": "0x100cb42e6bc4f3a7a04dd1ee4d204ccabb1cc7e7d2de4995dd80e50bf45aaf2a",
       "leader_execution_succeeded": true,
       "method": "evaluate_assessment",
-      "sender": "0x13126490396a236bE45821b3A01ce274E66cf0bE",
+      "sender": "0x96DcE3d47E038f3D91e5207936A98bb57083f084",
       "state": "checked",
       "status": "FINALIZED"
     },
@@ -88,13 +87,13 @@
         "Review healthy: independently inspect committed sources"
       ],
       "consensus_result": "MAJORITY_AGREE",
-      "hash": "0xbb3e3eda66123ffdb8ef6112394d14925aa1f2cd330b50362b4696caeac56643",
+      "hash": "0xd9bf21d1d8b2da58b99f4122e572356deb278342ba8ed6e7d05499dbcfa0bad7",
       "leader_execution_succeeded": true,
       "method": "open_assessment",
-      "sender": "0x4E36e017C27d8CCF4Ab5eC8C065F3BDfaf9CdE95",
+      "sender": "0xaA8Ea2f88B19cCeF410CB168286EC0Edb0FD2115",
       "state": "checked",
       "status": "FINALIZED"
     }
   },
-  "updated_at_utc": "2026-10-08T08:45:16.969118+00:00"
+  "updated_at_utc": "2026-10-06T18:44:22.582196+00:00"
 }

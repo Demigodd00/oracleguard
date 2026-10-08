@@ -7,7 +7,8 @@ import json
 import re
 
 
-VERSION = "1.1.0"
+VERSION = "1.2.0"
+MIN_PAUSE_SECONDS = 900
 MAX_BODY_BYTES = 4096
 MAX_ASSESSMENTS_PAGE = 25
 MAX_FUTURE_SECONDS = 3600
@@ -102,7 +103,7 @@ class OracleGuard(gl.Contract):
             _fail("deviation_out_of_bounds")
         if int(trigger_deviation_bps) <= int(max_reference_spread_bps) * 2:
             _fail("deviation_must_exceed_reference_spread")
-        if not 60 <= int(max_pause_seconds) <= 86400:
+        if not MIN_PAUSE_SECONDS <= int(max_pause_seconds) <= 86400:
             _fail("pause_out_of_bounds")
         self.owner = gl.message.sender_address
         self.pair = clean_pair
@@ -129,6 +130,7 @@ class OracleGuard(gl.Contract):
             "max_age_seconds": str(int(self.max_age_seconds)),
             "max_reference_spread_bps": str(int(self.max_reference_spread_bps)),
             "trigger_deviation_bps": str(int(self.trigger_deviation_bps)),
+            "min_pause_seconds": str(MIN_PAUSE_SECONDS),
             "max_pause_seconds": str(int(self.max_pause_seconds)),
         }
 
@@ -138,6 +140,7 @@ class OracleGuard(gl.Contract):
         return {
             "closed": now < int(self.suspended_until),
             "suspended_until": str(int(self.suspended_until)),
+            "remaining_seconds": str(max(0, int(self.suspended_until) - now)),
             "borrow_count": str(int(self.borrow_count)),
             "assessment_count": str(int(self.assessment_count)),
             "checked_at": str(now),
@@ -170,7 +173,7 @@ class OracleGuard(gl.Contract):
     def open_assessment(self, duration_seconds: u256, note: str) -> u256:
         duration = int(duration_seconds)
         clean_note = note.strip()
-        if duration < 60 or duration > int(self.max_pause_seconds):
+        if duration < MIN_PAUSE_SECONDS or duration > int(self.max_pause_seconds):
             _fail("duration_out_of_bounds")
         if not clean_note or len(clean_note) > 280 or "\x00" in clean_note:
             _fail("invalid_note")

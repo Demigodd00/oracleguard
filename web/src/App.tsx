@@ -6,15 +6,15 @@ import {
 } from "./chain";
 
 const previewPolicy: Policy = {
-  version: "1.1.0", owner: "—", pair: "ETH-USD",
+  version: "1.2.0", owner: "—", pair: "ETH-USD",
   feed_url: "https://feed.example.org/eth-usd.json",
   reference_a_url: "https://reference-a.example.net/eth-usd.json",
   reference_b_url: "https://reference-b.example.com/eth-usd.json",
   max_age_seconds: "600", max_reference_spread_bps: "200",
-  trigger_deviation_bps: "1000", max_pause_seconds: "1800",
+  trigger_deviation_bps: "1000", min_pause_seconds: "900", max_pause_seconds: "1800",
 };
 const previewGate: Gate = {
-  closed: false, suspended_until: "0", borrow_count: "0",
+  closed: false, suspended_until: "0", remaining_seconds: "0", borrow_count: "0",
   assessment_count: "0", checked_at: "0", funds_held: false,
 };
 
@@ -27,6 +27,10 @@ function hostname(url: string): string {
 function date(unix: number | string): string {
   const n = Number(unix);
   return n > 0 ? new Date(n * 1000).toLocaleString() : "—";
+}
+function remaining(seconds: string): string {
+  const value = Math.max(0, Number(seconds));
+  return `${Math.floor(value / 60)}m ${value % 60}s`;
 }
 function price(value: number): string {
   return value > 0 ? new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 2 }).format(value / 1e8) : "—";
@@ -120,7 +124,7 @@ export default function App() {
     <main>
       <section className="hero">
         <div className="hero-copy">
-          <div className="eyebrow"><span className="eyebrow-line" /> FEED INTEGRITY PROTOCOL <span className="version">v1.1</span></div>
+          <div className="eyebrow"><span className="eyebrow-line" /> FEED INTEGRITY PROTOCOL <span className="version">v1.2</span></div>
           <h1>When a price feed breaks, <em>borrowing waits.</em></h1>
           <p>OracleGuard lets GenLayer validators compare a protected feed with two independent references. A confirmed incident closes one borrowing gate for a bounded period. Unclear evidence grants no authority.</p>
           <div className="hero-actions"><a href="#console" className="primary-link">Open console <ArrowRight size={16} /></a><a href="#how" className="text-link">How it works <ArrowDownRight size={16} /></a></div>
@@ -130,7 +134,7 @@ export default function App() {
           <div className="status-icon">{gate.closed ? <LockKeyhole size={35} /> : <Activity size={35} />}</div>
           <div className="status-kicker">BORROW ADMISSION</div>
           <div className="status-word">{status}</div>
-          <p>{configured && !snapshot ? "Waiting for finalized gate state from StudioNet." : gate.closed ? `Borrow requests are blocked until ${date(gate.suspended_until)}.` : "Borrow requests are currently accepted by the demonstration contract."}</p>
+          <p>{configured && !snapshot ? "Waiting for finalized gate state from StudioNet." : gate.closed ? `Borrow requests are blocked until ${date(gate.suspended_until)}. ${remaining(gate.remaining_seconds)} remained at the last check.` : "Borrow requests are currently accepted by the demonstration contract."}</p>
           <div className="status-bottom"><span><span className="tiny-dot" /> {configured && !snapshot ? "STATE PENDING" : gate.closed ? "TEMPORARY HOLD" : "GATE OPEN"}</span><span>{policy.pair}</span></div>
         </div>
       </section>
@@ -167,8 +171,9 @@ export default function App() {
           <p className="panel-intro">First commit the request. Once it finalizes, validators fetch the charter’s exact URLs and evaluate the evidence.</p>
           <label className="field-label" htmlFor="note">INCIDENT NOTE</label>
           <textarea id="note" maxLength={280} value={note} onChange={e => setNote(e.target.value)} placeholder="Describe the suspected feed issue…" disabled={!configured || !snapshot || busy || !!pendingHash} />
-          <div className="input-row"><div><label className="field-label" htmlFor="duration">REQUESTED HOLD</label><div className="number-input"><input id="duration" type="number" min="60" max={policy.max_pause_seconds} step="60" value={duration} onChange={e => setDuration(e.target.value)} disabled={!configured || !snapshot || busy || !!pendingHash} /><span>seconds</span></div></div><div className="duration-hint">Maximum<br/><strong>{pauseMinutes} minutes</strong></div></div>
-          <button className="action-button" disabled={!configured || !snapshot || busy || !!pendingHash || !note.trim() || Number(duration) < 60 || Number(duration) > Number(policy.max_pause_seconds)} onClick={() => void action("open_assessment", [Number(duration), note])}>Open assessment <ArrowRight size={17} /></button>
+          <div className="input-row"><div><label className="field-label" htmlFor="duration">REQUESTED HOLD</label><div className="number-input"><input id="duration" type="number" min={policy.min_pause_seconds} max={policy.max_pause_seconds} step="60" value={duration} onChange={e => setDuration(e.target.value)} disabled={!configured || !snapshot || busy || !!pendingHash} /><span>seconds</span></div></div><div className="duration-hint">{Number(policy.min_pause_seconds) / 60}–{pauseMinutes}<br/><strong>minutes</strong></div></div>
+          <p className="microcopy">The hold deadline starts at evaluation submission. Validator finality reduces the time remaining when the decision becomes usable.</p>
+          <button className="action-button" disabled={!configured || !snapshot || busy || !!pendingHash || !note.trim() || Number(duration) < Number(policy.min_pause_seconds) || Number(duration) > Number(policy.max_pause_seconds)} onClick={() => void action("open_assessment", [Number(duration), note])}>Open assessment <ArrowRight size={17} /></button>
           <div className="action-divider"><span>PROTECTED ACTION DEMO</span></div>
           <div className="borrow-row"><div className="number-input"><input aria-label="Borrow units" type="number" min="1" max="1000" value={borrowUnits} onChange={e => setBorrowUnits(e.target.value)} disabled={!configured || !snapshot || busy || !!pendingHash} /><span>units</span></div><button className="secondary-button" disabled={!configured || !snapshot || busy || !!pendingHash || gate.closed || Number(borrowUnits) < 1 || Number(borrowUnits) > 1000} onClick={() => void action("request_borrow", [Number(borrowUnits)])}>Test borrow <ChevronRight size={16} /></button></div>
           <p className="microcopy">Demo admission counter only. No loan is issued and no user funds are held.</p>
@@ -182,7 +187,7 @@ export default function App() {
         <div className="section-header"><div><span className="section-label">03 / CONSENSUS RECORD</span><h2>Assessment history</h2><p>Only finalized decisions are shown in the live console.</p></div><button className="refresh-button" onClick={() => void refresh()} disabled={!configured || loading}><RefreshCw size={15} className={loading ? "spin" : ""} /> Refresh</button></div>
         <div className="incident-table">
           <div className="table-head"><span>INCIDENT</span><span>DECISION</span><span>EVIDENCE</span><span>OPENED</span><span>ACTION</span></div>
-          {incidents.length === 0 ? <div className="empty-state"><Fingerprint size={27} /><strong>No assessments yet</strong><span>{configured ? "Open an assessment to create the first immutable record." : "Assessment records appear here after deployment."}</span></div> : incidents.map(item => <Incident key={item.id} item={item} disabled={busy || !!pendingHash} onEvaluate={() => void action("evaluate_assessment", [item.id])} />)}
+          {incidents.length === 0 ? <div className="empty-state"><Fingerprint size={27} /><strong>No assessments yet</strong><span>{configured ? "Open an assessment to create the first immutable record." : "Assessment records appear here after deployment."}</span></div> : incidents.map(item => <Incident key={item.id} item={item} checkedAt={Number(gate.checked_at)} disabled={busy || !!pendingHash} onEvaluate={() => void action("evaluate_assessment", [item.id])} />)}
         </div>
       </section>
 
@@ -197,7 +202,7 @@ function Source({ role, label, url, number }: { role: string; label: string; url
   return <div className="source"><div className="source-index">{number}</div><div><span>{role}</span><strong>{label}</strong><small>{hostname(url)}</small></div><a href={url} target="_blank" rel="noreferrer" aria-label={`Open ${role}`}><ExternalLink size={15} /></a></div>;
 }
 
-function Incident({ item, disabled, onEvaluate }: { item: Assessment; disabled: boolean; onEvaluate: () => void }) {
+function Incident({ item, checkedAt, disabled, onEvaluate }: { item: Assessment; checkedAt: number; disabled: boolean; onEvaluate: () => void }) {
   const confirmed = item.status === "TRIGGER_CONFIRMED";
-  return <div className="incident-entry"><div className="incident-row"><div className="incident-id"><strong>#{String(item.id).padStart(3, "0")}</strong><small>{item.note}</small></div><div><span className={`decision decision-${item.status.toLowerCase()}`}>{confirmed ? <LockKeyhole size={13} /> : item.status === "NO_TRIGGER" ? <Check size={13} /> : <CircleAlert size={13} />}{item.status.replaceAll("_", " ")}</span></div><div className="evidence-cell"><strong>{item.status === "OPEN" ? "Awaiting validators" : reason(item.reason)}</strong><small>{item.reference_mid_e8 ? `${price(item.feed_price_e8)} / ${price(item.reference_mid_e8)} ref.` : "—"}</small></div><div className="date-cell">{date(item.opened_at)}</div><div>{item.status === "OPEN" ? <button className="evaluate-button" disabled={disabled} onClick={onEvaluate}>Evaluate <ArrowRight size={14} /></button> : <span className="recorded">{confirmed ? `Until ${date(item.pause_until)}` : "Recorded"}</span>}</div></div>{item.samples && Object.keys(item.samples).length > 0 && <details className="evidence-details"><summary>Inspect recorded source responses</summary><div className="evidence-grid">{Object.entries(item.samples).map(([role, sample]) => <div key={role}><strong>{role.replaceAll("_", " ")}</strong><a href={sample.url} target="_blank" rel="noreferrer">{hostname(sample.url)} <ExternalLink size={12} /></a><span>HTTP {sample.http_status} · {sample.ok ? price(sample.price_e8) : sample.reason} · {date(sample.observed_at)}</span><code>SHA-256: {sample.sha256 || "—"}</code><pre>{sample.raw_body || "No response body recorded"}</pre></div>)}</div></details>}</div>;
+  return <div className="incident-entry"><div className="incident-row"><div className="incident-id"><strong>#{String(item.id).padStart(3, "0")}</strong><small>{item.note}</small></div><div><span className={`decision decision-${item.status.toLowerCase()}`}>{confirmed ? <LockKeyhole size={13} /> : item.status === "NO_TRIGGER" ? <Check size={13} /> : <CircleAlert size={13} />}{item.status.replaceAll("_", " ")}</span></div><div className="evidence-cell"><strong>{item.status === "OPEN" ? "Awaiting validators" : reason(item.reason)}</strong><small>{item.reference_mid_e8 ? `${price(item.feed_price_e8)} / ${price(item.reference_mid_e8)} ref.` : "—"}</small></div><div className="date-cell">{date(item.opened_at)}</div><div>{item.status === "OPEN" ? <button className="evaluate-button" disabled={disabled} onClick={onEvaluate}>Evaluate <ArrowRight size={14} /></button> : <span className="recorded">{confirmed ? `${item.pause_until > checkedAt ? "Until" : "Expired"} ${date(item.pause_until)}` : "Recorded"}</span>}</div></div>{item.samples && Object.keys(item.samples).length > 0 && <details className="evidence-details"><summary>Inspect recorded source responses</summary><div className="evidence-grid">{Object.entries(item.samples).map(([role, sample]) => <div key={role}><strong>{role.replaceAll("_", " ")}</strong><a href={sample.url} target="_blank" rel="noreferrer">{hostname(sample.url)} <ExternalLink size={12} /></a><span>HTTP {sample.http_status} · {sample.ok ? price(sample.price_e8) : sample.reason} · {date(sample.observed_at)}</span><code>SHA-256: {sample.sha256 || "—"}</code><pre>{sample.raw_body || "No response body recorded"}</pre></div>)}</div></details>}</div>;
 }

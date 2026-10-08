@@ -6,6 +6,8 @@ OracleGuard is a standalone GenLayer app for bounded oracle incident control. It
 
 Anyone can open an assessment, which records the exact request and policy URLs on-chain. After that transaction finalizes, anyone can ask validators to fetch the sources and evaluate them. A `TRIGGER_CONFIRMED` result temporarily blocks `request_borrow`. Stale or conflicting references, unavailable sources, malformed data, and non-triggering prices cannot close the gate. The hold expires by timestamp without an administrator transaction.
 
+The minimum requested hold is 900 seconds. Its deadline is anchored to the evaluation transaction timestamp, so consensus and finalization consume part of that window. The console shows the time actually remaining after a finalized read. If network finality takes longer than the requested window, the result is still recorded but the gate is open; a fresh assessment must evaluate current evidence again. StudioNet cannot start the timer from an EVM finalization callback.
+
 **Scope:** `request_borrow` is a demonstration admission counter. It transfers no asset and holds no user funds. OracleGuard is not wired to an external lending market. Its effect is limited to this contract's own borrowing demo. See [architecture](docs/ARCHITECTURE.md) and [source requirements](docs/SOURCE_SPEC.md).
 
 ## Repository

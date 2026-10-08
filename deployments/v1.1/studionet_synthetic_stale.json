@@ -1,7 +1,7 @@
 {
-  "address": "0x663De815860ca7719268c4D1381A7D080e8522B1",
-  "deployed_at_utc": "2026-10-08T08:41:51.333331+00:00",
-  "deployment_transaction": "0x44eebb3fe62b9b0bbdab2bf9b972eba6d7a02b2a75d40065fde414b48a8b1209",
+  "address": "0x81e640216983AA95e6B917Dc02CeED802AaaA228",
+  "deployed_at_utc": "2026-10-06T18:44:45.281271+00:00",
+  "deployment_transaction": "0xd26538697bbd5f19fb3fbb932fe983c02a04cb13745433c4e7c45e69e8920800",
   "network": "studionet",
   "note": "Immutable charter; signer private key discarded; no owner-only methods.",
   "policy": {
@@ -9,14 +9,13 @@
     "max_age_seconds": "600",
     "max_pause_seconds": "1800",
     "max_reference_spread_bps": "200",
-    "min_pause_seconds": "900",
-    "owner": "0x3F3277CA029f83B5507CaeB81A4120ef5eB3cE03",
+    "owner": "0x5E4dc8BeA5dEaC4c00782129e44EA5956e921C32",
     "pair": "ETH-USD",
     "reference_a_url": "https://api.exchange.coinbase.com/products/ETH-USD/trades?limit=1",
     "reference_b_url": "https://api.kraken.com/0/public/PostTrade?symbol=ETH/USD&count=1",
     "trigger_deviation_bps": "1000",
-    "version": "1.2.0"
+    "version": "1.1.0"
   },
-  "signer": "0x3F3277CA029f83B5507CaeB81A4120ef5eB3cE03",
-  "source_sha256": "5b0b902ebabbd30b761ec82c2e104fdca2ee137cb0f138a4cc292acbca82a99a"
+  "signer": "0x5E4dc8BeA5dEaC4c00782129e44EA5956e921C32",
+  "source_sha256": "22b5b93a7b639e13b0e5a74f113d18bf60d0d885168e605e98cd8878828cec72"
 }

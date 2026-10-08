@@ -1,39 +1,39 @@
 {
   "assessment": {
-    "assessed_at": 1791449283,
+    "assessed_at": 1791312534,
     "deviation_bps": 0,
     "duration_seconds": 900,
-    "feed_price_e8": 256136000000,
+    "feed_price_e8": 269302000000,
     "feed_url": "https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd&include_last_updated_at=true",
     "id": 1,
     "note": "Review invalid_reference: independently inspect committed sources",
-    "opened_at": 1791449238,
+    "opened_at": 1791312491,
     "pair": "ETH-USD",
     "pause_until": 0,
     "reason": "SOURCE_INVALID",
     "reference_a_url": "https://api.exchange.coinbase.com/products/ETH-USD/trades?limit=1",
     "reference_b_url": "https://raw.githubusercontent.com/Demigodd00/oracleguard/886c3f3/evidence/missing-reference.json",
     "reference_mid_e8": 0,
-    "requester": "0x5b732495e495B9A1DfBD95f70b4116702c6638c1",
+    "requester": "0xd29EcbfE4ea03fF9166a82706b0ab8797466c64d",
     "samples": {
       "feed": {
         "http_status": 200,
-        "observed_at": 1791449140,
+        "observed_at": 1791312400,
         "ok": true,
-        "price_e8": 256136000000,
-        "raw_body": "{\"ethereum\":{\"usd\":2561.36,\"last_updated_at\":1791449140}}",
+        "price_e8": 269302000000,
+        "raw_body": "{\"ethereum\":{\"usd\":2693.02,\"last_updated_at\":1791312400}}",
         "reason": "",
-        "sha256": "5ef1d83b5140337e0919c54171234c58312d24c216474b9ccd2005e8fc64a1a3",
+        "sha256": "2b24f9beb48c2a13f067c96982eaace23bcef0387133c5d372039538ec7e7386",
         "url": "https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd&include_last_updated_at=true"
       },
       "reference_a": {
         "http_status": 200,
-        "observed_at": 1791449285,
+        "observed_at": 1791312537,
         "ok": true,
-        "price_e8": 255841000000,
-        "raw_body": "[{\"trade_id\":847461888,\"side\":\"sell\",\"size\":\"1.01488366\",\"price\":\"2558.41000000\",\"time\":\"2026-10-08T08:48:05.789852Z\"}]",
+        "price_e8": 269266000000,
+        "raw_body": "[{\"trade_id\":847120170,\"side\":\"buy\",\"size\":\"0.00105138\",\"price\":\"2692.66000000\",\"time\":\"2026-10-06T18:48:57.841877Z\"}]",
         "reason": "",
-        "sha256": "ba35175c3b63a018cfdb5bb8f87fcf65fa7004055fca0098eda75495aaff5a67",
+        "sha256": "01e6142a1495b7458b973be7bc8ab5ce4dc150ef3d3b1fe4a64989fac079e02b",
         "url": "https://api.exchange.coinbase.com/products/ETH-USD/trades?limit=1"
       },
       "reference_b": {
@@ -56,15 +56,14 @@
     "missing_reference_recorded": true,
     "open_readback": true
   },
-  "contract": "0x736F6dC07F882B37ACB860D86735A8d8fd544937",
+  "contract": "0x9Ac6c8fC37c8637b6F9002b9562f568B46819d34",
   "fixture_disclosure": "A commit-pinned missing reference URL deliberately returns 404 to test fail-safe behavior.",
   "gate_after": {
     "assessment_count": "1",
     "borrow_count": "0",
-    "checked_at": "1791449330",
+    "checked_at": "1791312577",
     "closed": false,
     "funds_held": false,
-    "remaining_seconds": "0",
     "suspended_until": "0"
   },
   "network": "studionet",
@@ -76,10 +75,10 @@
         1
       ],
       "consensus_result": "MAJORITY_AGREE",
-      "hash": "0x6fb7aaa7391fe877bc152f72ee3fb15d97e2d502e45bb642be220d382f7edd27",
+      "hash": "0xe782bd5d70b46e6256ae8059d95c73bbc08c71228650f76490e97cdb046d4c27",
       "leader_execution_succeeded": true,
       "method": "evaluate_assessment",
-      "sender": "0xC92306399fA8457D2AD094b8743749f450Eba686",
+      "sender": "0xb985ecAE79e3555C359c665CDB3D3DDddF6e3c45",
       "state": "checked",
       "status": "FINALIZED"
     },
@@ -89,13 +88,13 @@
         "Review invalid_reference: independently inspect committed sources"
       ],
       "consensus_result": "MAJORITY_AGREE",
-      "hash": "0xdfc8a877721b8f132d09d9d7d9bb53dbfef4a67f66420460981e7b872570f40d",
+      "hash": "0xe53bb7488a9c35ada9b6b26bebc00404c9071c3f478c7a903b7dd6828df94909",
       "leader_execution_succeeded": true,
       "method": "open_assessment",
-      "sender": "0x5b732495e495B9A1DfBD95f70b4116702c6638c1",
+      "sender": "0xd29EcbfE4ea03fF9166a82706b0ab8797466c64d",
       "state": "checked",
       "status": "FINALIZED"
     }
   },
-  "updated_at_utc": "2026-10-08T08:48:51.655491+00:00"
+  "updated_at_utc": "2026-10-06T18:49:39.017229+00:00"
 }

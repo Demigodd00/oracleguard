@@ -116,8 +116,13 @@ def main() -> None:
         for role in ("feed", "reference_a", "reference_b")
         if args.scenario != "invalid_reference" or role != "reference_b")
     record["checks"]["gate_effect"] = (
-        int(assessment["pause_until"]) > int(assessment["assessed_at"])
+        gate["closed"] and int(gate["remaining_seconds"]) >= 300
         if args.scenario == "synthetic_stale" else not gate["closed"])
+    if args.scenario == "synthetic_stale":
+        record["timing"] = {
+            "finality_consumed_seconds": int(gate["checked_at"]) - int(assessment["assessed_at"]),
+            "remaining_seconds_at_finalized_read": int(gate["remaining_seconds"]),
+        }
     if args.scenario == "invalid_reference":
         record["checks"]["missing_reference_recorded"] = (
             assessment.get("samples", {}).get("reference_b", {}).get("http_status") == 404)

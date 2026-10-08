@@ -1,7 +1,7 @@
 {
-  "address": "0x736F6dC07F882B37ACB860D86735A8d8fd544937",
-  "deployed_at_utc": "2026-10-08T08:42:55.108362+00:00",
-  "deployment_transaction": "0x7c58e3e13f0468503259f28011e6f1002f065758161d4c052d9445fb95ed6956",
+  "address": "0x9Ac6c8fC37c8637b6F9002b9562f568B46819d34",
+  "deployed_at_utc": "2026-10-06T18:47:44.902418+00:00",
+  "deployment_transaction": "0x0327652119ee5fd7992ed098653c00bb16e3c2e119cad3b7786ec104a7f6bbb2",
   "network": "studionet",
   "note": "Immutable charter; signer private key discarded; no owner-only methods.",
   "policy": {
@@ -9,14 +9,13 @@
     "max_age_seconds": "600",
     "max_pause_seconds": "1800",
     "max_reference_spread_bps": "200",
-    "min_pause_seconds": "900",
-    "owner": "0xfe27e515baEFD5fa4B448295cda504E92D18A6e4",
+    "owner": "0xeF0386C57FeC91b1d303bE98513E8e40168deE4f",
     "pair": "ETH-USD",
     "reference_a_url": "https://api.exchange.coinbase.com/products/ETH-USD/trades?limit=1",
     "reference_b_url": "https://raw.githubusercontent.com/Demigodd00/oracleguard/886c3f3/evidence/missing-reference.json",
     "trigger_deviation_bps": "1000",
-    "version": "1.2.0"
+    "version": "1.1.0"
   },
-  "signer": "0xfe27e515baEFD5fa4B448295cda504E92D18A6e4",
-  "source_sha256": "5b0b902ebabbd30b761ec82c2e104fdca2ee137cb0f138a4cc292acbca82a99a"
+  "signer": "0xeF0386C57FeC91b1d303bE98513E8e40168deE4f",
+  "source_sha256": "22b5b93a7b639e13b0e5a74f113d18bf60d0d885168e605e98cd8878828cec72"
 }
