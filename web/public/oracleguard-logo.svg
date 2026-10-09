@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" role="img" aria-labelledby="title description">
+  <title id="title">OracleGuard logo</title>
+  <desc id="description">A dark shield and feed pulse inside a lime square on a deep green background.</desc>
+  <rect width="1024" height="1024" rx="176" fill="#101611"/>
+  <rect x="168" y="168" width="688" height="688" rx="152" fill="#d4ef79"/>
+  <path d="M512 294 688 360v152c0 124-77 206-176 252-99-46-176-128-176-252V360z" fill="none" stroke="#172015" stroke-width="44" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M398 521h62l34-63 44 127 37-64h50" fill="none" stroke="#172015" stroke-width="34" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
